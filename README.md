@@ -7,7 +7,7 @@ Snowfall.js is a JavaScript library for creating and animating snowflakes on a w
 To use Snowfall.js, you need to download the file snowfall.js from [this repository] and include it in your HTML page using the script tag:
 
 ```html
-<script src="snowfall.js"></script>
+<script src="snowfall.js?v=1.0.0"></script>
 ```
 
 ## Usage
