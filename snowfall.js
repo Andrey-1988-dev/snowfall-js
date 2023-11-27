@@ -18,8 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * Version: 1.0.0
- * Date: 2021-11-18T00:00Z
+ * Version: 1.1.0
+ * Date: 2021-11-27T00:00Z
  */
 
 'use strict'
@@ -39,7 +39,7 @@ class Snowflake {
     }
 
     // Function to calculate the new position of the snowflake relative to the edge of the canvas
-    calculateNewPosition(oldPosition, oldCanvasSize, newCanvasSize) {
+    calculateNewPosition = (oldPosition, oldCanvasSize, newCanvasSize) => {
         // Calculate the old position of the snowflake from the edge in percentage
         let percentage = oldPosition / (oldCanvasSize / 100);
         // Calculate the new position of the snowflake from the edge in pixels
@@ -47,7 +47,7 @@ class Snowflake {
         return newCanvasSize / 100 * percentage;
     }
 
-    updateAfterCanvasResize(oldCanvasWidth, oldCanvasHeight, newCanvasWidth, newCanvasHeight) {
+    updateAfterCanvasResize = (oldCanvasWidth, oldCanvasHeight, newCanvasWidth, newCanvasHeight) => {
         if (oldCanvasWidth !== newCanvasWidth) {
             // Call the function to calculate the new position of the snowflake from the left edge
             this.x = this.calculateNewPosition(this.x, oldCanvasWidth, newCanvasWidth);
@@ -59,19 +59,9 @@ class Snowflake {
     }
 
     // Method to draw the snowflake on the canvas
-    draw(ctx) {
-        // Get the scroll offset of the window
-        let scrollX = window.scrollX;
-        let scrollY = window.scrollY;
-        // Get the width and height of the window
-        let windowWidth = window.innerWidth;
-        let windowHeight = window.innerHeight;
+    draw = ctx => {
         // Check if the snowflake is within the visible area
-        if (
-            this.x + this.h >= scrollX && this.x - this.h <= scrollX + windowWidth 
-            && 
-            this.y + this.h >= scrollY && this.y - this.h <= scrollY + windowHeight
-        ) {
+        if (this.x + this.h >= window.scrollX && this.x - this.h <= window.scrollX + window.innerWidth && this.y + this.h >= window.scrollY && this.y - this.h <= window.scrollY + window.innerHeight) {
             ctx.font = this.h + "px Arial, sans-serif"; // set the font and text size
             ctx.fillText(this.t, this.x, this.y); // draw the text with the snowflake symbol
             ctx.fillStyle = this.c; // set the color
@@ -79,41 +69,60 @@ class Snowflake {
     }
 
     // Method to update the position of the snowflake
-    update(canvas) {
+    update = canvas => {
         this.y += this.s; // increase the y coordinate by the speed
         // if the snowflake goes beyond the bottom edge of the canvas, move it to the top
-        if (this.y > canvas.height) {
-            this.y = -this.h;
-            this.x = Math.random() * canvas.width;
+        if (this.s > 0) {
+            if (this.y > canvas.height) {
+                this.y = -this.h;
+                this.x = Math.random() * canvas.width;
+            }
+        } else {
+            if (this.y < 0) {
+                this.y = canvas.height + this.h;
+                this.x = Math.random() * canvas.width;
+            }
         }
     }
 }
 
 class Snowfall {
+    requestAnimationFrame;
+
     // Constructor takes parameters for creating snowflakes
-    constructor(options) {
+    constructor(options = {}) {
         let {
             count = 100,
-            minRadius = 10, 
-            maxRadius = 30, 
+            minRadius = 10,
+            maxRadius = 30,
             minSpeed = 3,
-            maxSpeed = 10, 
-            text = "\u2744", 
-            color = "#ffffff", 
+            maxSpeed = 10,
+            text = "❄",
+            color = "#99ccff",
             zIndex = "1000"
         } = options;
-        
-        let snowfieldCanvas = document.createElement("canvas");
+
+        count = Number(count);
+        minRadius = Number(minRadius);
+        if (minRadius <= 0) {
+            minRadius = 10
+        }
+        maxRadius = Number(maxRadius);
+        if (maxRadius <= 0) {
+            maxRadius = 30
+        }
+        minSpeed = Number(minSpeed);
+        maxSpeed = Number(maxSpeed);
+
+        const snowfieldCanvas = document.createElement("canvas");
+        snowfieldCanvas.id = "snowfall";
         snowfieldCanvas.style.zIndex = zIndex;
         snowfieldCanvas.style.position = "absolute";
         snowfieldCanvas.style.top = "0";
         snowfieldCanvas.style.left = "0";
         snowfieldCanvas.style.pointerEvents = "none";
-        
-        // Wait for the document to be loaded before appending the canvas
-        document.addEventListener("DOMContentLoaded", () => {
-            document.body.append(snowfieldCanvas);
-        });
+
+        document.body.append(snowfieldCanvas);
 
         // Get the canvas element by id
         this.canvas = snowfieldCanvas;
@@ -154,7 +163,8 @@ class Snowfall {
             oldCanvasWidth = this.canvas.width
             oldCanvasHeight = this.canvas.height
         }
-        this.canvas.style.display = 'none'
+        this.canvas.style.display = 'none';
+
         // Set the width and height of the canvas equal to the width and height of the browser window
         if (window.devicePixelRatio > 1) {
             let scrollWidth = document.documentElement.scrollWidth
@@ -178,22 +188,28 @@ class Snowfall {
                 snowflake.updateAfterCanvasResize(oldCanvasWidth, oldCanvasHeight, newCanvasWidth, newCanvasHeight);
             }
         }
-    };
+    }
 
     // Function to create snowflakes and add them to the array
     createSnowflakes = () => {
         // Loop through the number of snowflakes
         for (let i = 0; i < this.count; i++) {
             // Generate a random radius within the minimum and maximum radius
-            let r = Math.random() * (this.maxRadius - this.minRadius) + this.minRadius;
+            let r = this.minRadius + Math.random() * (this.maxRadius - this.minRadius);
             // Generate the speed based on the size of the snowflake
-            let s = (this.maxSpeed - this.minSpeed) / 100 * r;
+            let rp;
+            if (this.minRadius !== this.maxRadius) {
+                rp = (r - this.minRadius) / ((this.maxRadius - this.minRadius) / 100);
+            } else {
+                rp = 100;
+            }
+            let s = this.minSpeed + ((this.maxSpeed - this.minSpeed) / 100 * rp);
             // Create a new snowflake object with the given parameters
             let snowflake = new Snowflake(this.canvas, r, s, this.color, this.text);
             // Add the snowflake to the array
             this.snowflakes.push(snowflake);
         }
-    };
+    }
 
     // Function to animate the snowflakes
     animateSnowflakes = () => {
@@ -208,6 +224,19 @@ class Snowfall {
             snowflake.update(this.canvas);
         }
         // Request a new animation frame
-        requestAnimationFrame(this.animateSnowflakes);
+        this.requestAnimationFrame = requestAnimationFrame(this.animateSnowflakes);
+    }
+
+    // Method to destroy the snowfall and remove the canvas element
+    destroy = () => {
+        cancelAnimationFrame(this.requestAnimationFrame);
+        document.getElementById("snowfall").remove();
+        for (let name in this) {
+            delete this[name];
+        }
+        // Empty the array of snowflakes
+        this.snowflakes = [];
+        // Remove the event listener for resize
+        window.removeEventListener("resize", this.resizeCanvas);
     }
 }

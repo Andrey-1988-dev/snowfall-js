@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Snowfall demo</title>
+    <meta name="description"
+          content="This page is a demo of Snowfall.js, a JavaScript script that creates a realistic and customizable snowfall effect on your website. You can adjust various parameters of the snowfall, such as the number, size, speed, color and text of the snowflakes. You can also see the source code and documentation of the script on GitHub."/>
+    <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-3 mb-3">
+    <div class="row">
+        <div class="col">
+            <h1>Snowfall demo</h1>
+            <p>With this page, you can customize various parameters of the snowfall, such as the number, size, speed,
+                color and text of the snowflakes. You can enter the desired values in the form below and click the
+                "Accept" button to apply the changes. You can also click the "Default" button to return to the initial
+                settings. You will see how your snowfall will be animated on the background of your page. This is a fun
+                and interesting way to decorate your website.</p>
+            <p>This script was created using JavaScript and HTML5 canvas. You can find the source code and detailed
+                documentation at <a href="https://github.com/Andrey-1988-dev/snowfall-js">snowfall-js</a>. You can
+                freely use, modify and
+                distribute this script under the GPL-3.0 license. If you liked this script, you can support the author
+                by leaving a star or a comment on GitHub.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <form class="row g-3" id="form">
+                <div class="col-md-6">
+                    <label class="form-label" for="count">Number of snowflakes (count)</label>
+                    <input class="form-control" id="count" name="count" type="number" value="100">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="text">Text for a snowflake (can be any symbol or text) (text)</label>
+                    <input class="form-control" id="text" name="text" type="text" value="❄">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="color">Color of a snowflake in HEX format (color)</label>
+                    <input class="form-control" id="color" name="color" style="height: 2.5em;" type="color"
+                           value="#99ccff">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="zIndex">Z-index for the snowflakes canvas (zIndex)</label>
+                    <input class="form-control" id="zIndex" name="zIndex" type="number" value="1000">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="minRadius">Minimum radius of a snowflake in pixels
+                        (minRadius)</label>
+                    <input class="form-control" id="minRadius" name="minRadius" type="number" value="10">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="maxRadius">Maximum radius of a snowflake in pixels
+                        (maxRadius)</label>
+                    <input class="form-control" id="maxRadius" name="maxRadius" type="number" value="30">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="minSpeed">Minimum speed of a snowflake in pixels per frame
+                        (minSpeed)</label>
+                    <input class="form-control" id="minSpeed" name="minSpeed" type="number" value="3">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="maxSpeed">Maximum speed of a snowflake in pixels per frame
+                        (maxSpeed)</label>
+                    <input class="form-control" id="maxSpeed" name="maxSpeed" type="number" value="10">
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit">Accept</button>
+                    <button class="btn btn-secondary" id="default" type="button">Default</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script crossorigin="anonymous"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="snowfall.js"></script>
+<script>
+    // Создаем объект с параметрами по умолчанию
+    let defaultParams = {
+        count: "100", // number of snowflakes
+        minRadius: "10", // minimum radius of a snowflake in pixels
+        maxRadius: "30", // maximum radius of a snowflake in pixels
+        minSpeed: "3", // minimum speed of a snowflake in pixels per frame
+        maxSpeed: "10", // maximum speed of a snowflake in pixels per frame
+        text: "❄", // text for a snowflake (can be any symbol or text)
+        color: "#99ccff", // color of a snowflake in HEX format
+        zIndex: "1000" // z-index for the snowflakes canvas
+    };
+
+    // Создаем снегопад с параметрами по умолчанию
+    let snowfall = new Snowfall();
+
+    // Находим форму на странице
+    let form = document.getElementById("form");
+    // Находим кнопку "Default" на странице
+    let defaultButton = document.getElementById("default");
+
+    // Добавляем обработчик события на форму
+    form.addEventListener("submit", event => {
+        // Отменяем действие по умолчанию (отправку формы)
+        event.preventDefault();
+        // Создаем пустой объект для новых параметров
+        let newParams = {};
+        // Перебираем все элементы input в форме
+        for (let input of form.elements) {
+            // Если элемент имеет атрибут name, то добавляем его в объект новых параметров
+            if (input.name) {
+                newParams[input.name] = input.value;
+            }
+        }
+
+        // Удаляем старый снегопад
+        snowfall.destroy();
+        // Создаем новый снегопад с новыми параметрами
+        snowfall = new Snowfall(newParams);
+    });
+
+    // Добавляем обработчик события на кнопку "Default"
+    defaultButton.addEventListener("click", () => {
+        // Удаляем старый снегопад
+        snowfall.destroy();
+        // Создаем новый снегопад с параметрами по умолчанию
+        snowfall = new Snowfall();
+        // Перебираем все элементы input в форме
+        for (let input of form.elements) {
+            // Если элемент имеет атрибут name, то устанавливаем его значение равным значению по умолчанию
+            if (input.name) {
+                input.value = defaultParams[input.name];
+            }
+        }
+    });
+</script>
+</body>
+</html>
